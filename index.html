@@ -38,6 +38,7 @@
             font-size: 16px;
             cursor: pointer;
             transition: background 0.3s;
+            margin: 5px;
         }
         button:hover {
             background: #1565c0;
@@ -55,18 +56,38 @@
             color: #d32f2f;
             font-weight: bold;
         }
-        .attempts-warning {
-            color: #ff9800;
+        #victory-section {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.5s;
         }
-        .attempts-critical {
-            color: #d32f2f;
-            animation: pulse 0.5s infinite alternate;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        @keyframes pulse {
-            from { opacity: 1; }
-            to { opacity: 0.6; }
+        .social-btn {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            margin: 5px;
+        }
+        #screenshot-btn {
+            background: #4CAF50;
+        }
+        #twitter-btn {
+            background: #1DA1F2;
+        }
+        #whatsapp-btn {
+            background: #25D366;
+        }
+        #play-again-btn {
+            background: #FF9800;
         }
     </style>
+    <!-- HTML2Canvas for screenshot functionality -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
     <div id="game">
@@ -78,6 +99,15 @@
         </div>
         <p id="message"></p>
         <p id="attempts">Attempts used: 0/5</p>
+        
+        <div id="victory-section">
+            <h2>🎉 You Won! 🎉</h2>
+            <p>Share your victory:</p>
+            <button id="screenshot-btn">Take Screenshot</button>
+            <a href="#" id="twitter-btn" class="social-btn">Tweet</a>
+            <a href="#" id="whatsapp-btn" class="social-btn">Share on WhatsApp</a>
+            <button id="play-again-btn">Play Again</button>
+        </div>
     </div>
 
     <script>
@@ -92,22 +122,53 @@
         const messageEl = document.getElementById('message');
         const attemptsEl = document.getElementById('attempts');
         const remainingEl = document.getElementById('remaining');
+        const victorySection = document.getElementById('victory-section');
+        const screenshotBtn = document.getElementById('screenshot-btn');
+        const twitterBtn = document.getElementById('twitter-btn');
+        const whatsappBtn = document.getElementById('whatsapp-btn');
+        const playAgainBtn = document.getElementById('play-again-btn');
         
         // Update attempts display
         function updateAttemptsDisplay() {
             const remaining = MAX_ATTEMPTS - attempts;
             remainingEl.textContent = remaining;
             attemptsEl.textContent = `Attempts used: ${attempts}/${MAX_ATTEMPTS}`;
-            
-            // Visual feedback based on remaining attempts
-            if (remaining <= 1) {
-                remainingEl.className = 'attempts-critical';
-            } else if (remaining <= 2) {
-                remainingEl.className = 'attempts-warning';
-            } else {
-                remainingEl.className = '';
-            }
         }
+        
+        // Show victory screen
+        function showVictory() {
+            victorySection.style.display = 'block';
+            guessInput.disabled = true;
+            submitBtn.disabled = true;
+            
+            // Set up sharing links
+            const shareText = `I guessed the number ${secretNumber} in ${attempts} attempts! Try to beat me!`;
+            twitterBtn.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(window.location.href)}`;
+            whatsappBtn.href = `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + window.location.href)}`;
+        }
+        
+        // Take screenshot
+        screenshotBtn.addEventListener('click', () => {
+            html2canvas(document.getElementById('game')).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'guess-the-number-victory.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        });
+        
+        // Play again
+        playAgainBtn.addEventListener('click', () => {
+            secretNumber = Math.floor(Math.random() * 100) + 1;
+            attempts = 0;
+            updateAttemptsDisplay();
+            messageEl.textContent = '';
+            guessInput.value = '';
+            guessInput.disabled = false;
+            submitBtn.disabled = false;
+            victorySection.style.display = 'none';
+            guessInput.focus();
+        });
         
         // Game logic
         function checkGuess() {
@@ -125,14 +186,14 @@
             
             if (guess === secretNumber) {
                 // Win condition
-                messageEl.textContent = `🎉 Correct! You guessed it in ${attempts} attempt${attempts === 1 ? '' : 's'}!`;
+                messageEl.textContent = `🎉 Correct! The number was ${secretNumber}.`;
                 messageEl.style.color = '#43a047';
-                endGame();
+                showVictory();
             } else if (attempts >= MAX_ATTEMPTS) {
                 // Lose condition
                 messageEl.textContent = `💔 Game Over! The number was ${secretNumber}.`;
                 messageEl.style.color = '#d32f2f';
-                endGame();
+                showVictory();
             } else {
                 // Continue playing
                 messageEl.textContent = guess < secretNumber ? 'Too low!' : 'Too high!';
@@ -140,24 +201,6 @@
                 guessInput.value = '';
             }
             guessInput.focus();
-        }
-        
-        // End game state
-        function endGame() {
-            guessInput.disabled = true;
-            submitBtn.disabled = true;
-            
-            // Restart after 3 seconds
-            setTimeout(() => {
-                secretNumber = Math.floor(Math.random() * 100) + 1;
-                attempts = 0;
-                updateAttemptsDisplay();
-                messageEl.textContent = '';
-                guessInput.value = '';
-                guessInput.disabled = false;
-                submitBtn.disabled = false;
-                guessInput.focus();
-            }, 3000);
         }
         
         // Event listeners
@@ -168,9 +211,6 @@
         
         // Initialize display
         updateAttemptsDisplay();
-        
-        // For debugging (remove in production)
-        console.log('Secret number:', secretNumber);
     </script>
 </body>
 </html>

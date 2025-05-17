@@ -19,6 +19,7 @@
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.9);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            color: #333;
         }
         input {
             padding: 10px;
@@ -41,83 +42,132 @@
         button:hover {
             background: #1565c0;
         }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
         #message {
             font-weight: bold;
             min-height: 24px;
             margin: 15px 0;
+        }
+        #attempts {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        .attempts-warning {
+            color: #ff9800;
+        }
+        .attempts-critical {
+            color: #d32f2f;
+            animation: pulse 0.5s infinite alternate;
+        }
+        @keyframes pulse {
+            from { opacity: 1; }
+            to { opacity: 0.6; }
         }
     </style>
 </head>
 <body>
     <div id="game">
         <h1>Guess the Number (1-100)</h1>
+        <p>You have <span id="remaining">10</span> attempts remaining</p>
         <div>
-            <input type="number" id="guess" placeholder="Enter guess" min="1" max="100">
-            <button id="submit-btn" onclick="checkGuess()">Submit</button>
+            <input type="number" id="guess" placeholder="Enter guess" min="1" max="100" autofocus>
+            <button id="submit-btn">Submit</button>
         </div>
         <p id="message"></p>
-        <p id="attempts">Attempts: 0</p>
+        <p id="attempts">Attempts used: 0/10</p>
     </div>
 
     <script>
-        let secretNumber;
-        let attempts;
+        // Game settings
+        const MAX_ATTEMPTS = 10;
+        let secretNumber = Math.floor(Math.random() * 100) + 1;
+        let attempts = 0;
         
-        function initGame() {
-            secretNumber = Math.floor(Math.random() * 100) + 1;
-            attempts = 0;
-            document.getElementById("attempts").textContent = "Attempts: 0";
-            document.getElementById("message").textContent = "";
-            document.getElementById("guess").value = "";
-            document.getElementById("guess").focus();
+        // DOM elements
+        const guessInput = document.getElementById('guess');
+        const submitBtn = document.getElementById('submit-btn');
+        const messageEl = document.getElementById('message');
+        const attemptsEl = document.getElementById('attempts');
+        const remainingEl = document.getElementById('remaining');
+        
+        // Update attempts display
+        function updateAttemptsDisplay() {
+            const remaining = MAX_ATTEMPTS - attempts;
+            remainingEl.textContent = remaining;
+            attemptsEl.textContent = `Attempts used: ${attempts}/${MAX_ATTEMPTS}`;
+            
+            // Visual feedback based on remaining attempts
+            if (remaining <= 3) {
+                remainingEl.className = 'attempts-critical';
+            } else if (remaining <= 5) {
+                remainingEl.className = 'attempts-warning';
+            } else {
+                remainingEl.className = '';
+            }
         }
         
+        // Game logic
         function checkGuess() {
-            const guessInput = document.getElementById("guess");
             const guess = parseInt(guessInput.value);
-            const message = document.getElementById("message");
-            const attemptsDisplay = document.getElementById("attempts");
-
-            if (isNaN(guess)) {
-                message.textContent = "Please enter a number!";
-                message.style.color = "#e53935";
+            
+            // Validate input
+            if (isNaN(guess) || guess < 1 || guess > 100) {
+                messageEl.textContent = 'Please enter a number between 1-100!';
+                messageEl.style.color = '#e53935';
                 return;
-            }
-
-            if (guess < 1 || guess > 100) {
-                message.textContent = "Please enter a number between 1-100!";
-                message.style.color = "#e53935";
-                return;
-            }
-
-            attempts++;
-            attemptsDisplay.textContent = `Attempts: ${attempts}`;
-
-            if (guess === secretNumber) {
-                message.textContent = `🎉 Correct! The number was ${secretNumber}. Starting new game...`;
-                message.style.color = "#43a047";
-                setTimeout(initGame, 2000); // Automatically restart after 2 seconds
-            } else if (guess < secretNumber) {
-                message.textContent = "⬆️ Higher!";
-                message.style.color = "#1e88e5";
-            } else {
-                message.textContent = "⬇️ Lower!";
-                message.style.color = "#1e88e5";
             }
             
-            guessInput.value = "";
+            attempts++;
+            updateAttemptsDisplay();
+            
+            if (guess === secretNumber) {
+                // Win condition
+                messageEl.textContent = `🎉 Correct! You guessed it in ${attempts} attempts!`;
+                messageEl.style.color = '#43a047';
+                endGame();
+            } else if (attempts >= MAX_ATTEMPTS) {
+                // Lose condition
+                messageEl.textContent = `💔 Game Over! The number was ${secretNumber}.`;
+                messageEl.style.color = '#d32f2f';
+                endGame();
+            } else {
+                // Continue playing
+                messageEl.textContent = guess < secretNumber ? '⬆️ Higher!' : '⬇️ Lower!';
+                messageEl.style.color = '#1e88e5';
+                guessInput.value = '';
+            }
             guessInput.focus();
         }
         
-        // Initialize game on page load
-        window.onload = initGame;
+        // End game state
+        function endGame() {
+            guessInput.disabled = true;
+            submitBtn.disabled = true;
+            
+            // Restart after 3 seconds
+            setTimeout(() => {
+                secretNumber = Math.floor(Math.random() * 100) + 1;
+                attempts = 0;
+                updateAttemptsDisplay();
+                messageEl.textContent = '';
+                guessInput.value = '';
+                guessInput.disabled = false;
+                submitBtn.disabled = false;
+                guessInput.focus();
+            }, 3000);
+        }
         
-        // Allow pressing Enter to submit
-        document.getElementById("guess").addEventListener("keyup", function(event) {
-            if (event.key === "Enter") {
-                checkGuess();
-            }
+        // Event listeners
+        submitBtn.addEventListener('click', checkGuess);
+        guessInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkGuess();
         });
+        
+        // Initialize display
+        updateAttemptsDisplay();
     </script>
 </body>
 </html>

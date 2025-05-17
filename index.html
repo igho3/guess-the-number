@@ -61,6 +61,11 @@
             margin-top: 20px;
             animation: fadeIn 0.5s;
         }
+        #gameover-section {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.5s;
+        }
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -79,10 +84,10 @@
         #twitter-btn {
             background: #1DA1F2;
         }
-        #whatsapp-btn {
-            background: #25D366;
-        }
         #play-again-btn {
+            background: #FF9800;
+        }
+        #gameover-play-again-btn {
             background: #FF9800;
         }
     </style>
@@ -105,8 +110,13 @@
             <p>Share your victory:</p>
             <button id="screenshot-btn">Take Screenshot</button>
             <a href="#" id="twitter-btn" class="social-btn">Tweet</a>
-            <a href="#" id="whatsapp-btn" class="social-btn">Share on WhatsApp</a>
             <button id="play-again-btn">Play Again</button>
+        </div>
+        
+        <div id="gameover-section">
+            <h2>💔 Game Over 💔</h2>
+            <p>The number was <span id="correct-number"></span></p>
+            <button id="gameover-play-again-btn">Play Again</button>
         </div>
     </div>
 
@@ -123,10 +133,8 @@
         const attemptsEl = document.getElementById('attempts');
         const remainingEl = document.getElementById('remaining');
         const victorySection = document.getElementById('victory-section');
-        const screenshotBtn = document.getElementById('screenshot-btn');
-        const twitterBtn = document.getElementById('twitter-btn');
-        const whatsappBtn = document.getElementById('whatsapp-btn');
-        const playAgainBtn = document.getElementById('play-again-btn');
+        const gameoverSection = document.getElementById('gameover-section');
+        const correctNumberEl = document.getElementById('correct-number');
         
         // Update attempts display
         function updateAttemptsDisplay() {
@@ -143,22 +151,29 @@
             
             // Set up sharing links
             const shareText = `I guessed the number ${secretNumber} in ${attempts} attempts! Try to beat me!`;
-            twitterBtn.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(window.location.href)}`;
-            whatsappBtn.href = `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + window.location.href)}`;
+            document.getElementById('twitter-btn').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(window.location.href)}`;
+            
+            // Set up screenshot button
+            document.getElementById('screenshot-btn').addEventListener('click', function() {
+                html2canvas(document.getElementById('game')).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'guess-the-number-victory.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                });
+            });
         }
         
-        // Take screenshot
-        screenshotBtn.addEventListener('click', () => {
-            html2canvas(document.getElementById('game')).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'guess-the-number-victory.png';
-                link.href = canvas.toDataURL();
-                link.click();
-            });
-        });
+        // Show game over screen
+        function showGameOver() {
+            correctNumberEl.textContent = secretNumber;
+            gameoverSection.style.display = 'block';
+            guessInput.disabled = true;
+            submitBtn.disabled = true;
+        }
         
         // Play again
-        playAgainBtn.addEventListener('click', () => {
+        function resetGame() {
             secretNumber = Math.floor(Math.random() * 100) + 1;
             attempts = 0;
             updateAttemptsDisplay();
@@ -167,8 +182,9 @@
             guessInput.disabled = false;
             submitBtn.disabled = false;
             victorySection.style.display = 'none';
+            gameoverSection.style.display = 'none';
             guessInput.focus();
-        });
+        }
         
         // Game logic
         function checkGuess() {
@@ -193,7 +209,7 @@
                 // Lose condition
                 messageEl.textContent = `💔 Game Over! The number was ${secretNumber}.`;
                 messageEl.style.color = '#d32f2f';
-                showVictory();
+                showGameOver();
             } else {
                 // Continue playing
                 messageEl.textContent = guess < secretNumber ? 'Too low!' : 'Too high!';
@@ -208,6 +224,8 @@
         guessInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') checkGuess();
         });
+        document.getElementById('play-again-btn').addEventListener('click', resetGame);
+        document.getElementById('gameover-play-again-btn').addEventListener('click', resetGame);
         
         // Initialize display
         updateAttemptsDisplay();

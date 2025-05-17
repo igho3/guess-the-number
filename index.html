@@ -9,15 +9,15 @@
             margin: 0;
             padding: 20px;
             min-height: 100vh;
-            background: #1e88e5; /* Bright blue background */
-            color: white; /* White text for contrast */
+            background: #1e88e5;
+            color: white;
         }
         #game {
             max-width: 400px;
             margin: 50px auto;
             padding: 30px;
             border-radius: 10px;
-            background: rgba(255, 255, 255, 0.9); /* Semi-transparent white box */
+            background: rgba(255, 255, 255, 0.9);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
         input {
@@ -39,24 +39,12 @@
             transition: background 0.3s;
         }
         button:hover {
-            background: #1565c0; /* Darker blue on hover */
-        }
-        button:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
+            background: #1565c0;
         }
         #message {
             font-weight: bold;
             min-height: 24px;
             margin: 15px 0;
-        }
-        #play-again {
-            display: none;
-            margin-top: 15px;
-            background: #43a047; /* Green for play again */
-        }
-        #play-again:hover {
-            background: #2e7d32;
         }
     </style>
 </head>
@@ -69,43 +57,36 @@
         </div>
         <p id="message"></p>
         <p id="attempts">Attempts: 0</p>
-        <button id="play-again" onclick="resetGame()">Play Again</button>
     </div>
 
     <script>
         let secretNumber;
         let attempts;
         
-        // Initialize the game
         function initGame() {
             secretNumber = Math.floor(Math.random() * 100) + 1;
             attempts = 0;
             document.getElementById("attempts").textContent = "Attempts: 0";
             document.getElementById("message").textContent = "";
             document.getElementById("guess").value = "";
-            document.getElementById("guess").disabled = false;
-            document.getElementById("submit-btn").disabled = false;
-            document.getElementById("play-again").style.display = "none";
+            document.getElementById("guess").focus();
         }
         
-        // Check the player's guess
         function checkGuess() {
             const guessInput = document.getElementById("guess");
             const guess = parseInt(guessInput.value);
             const message = document.getElementById("message");
             const attemptsDisplay = document.getElementById("attempts");
 
-            if (isNaN(guess) {
+            if (isNaN(guess)) {
                 message.textContent = "Please enter a number!";
                 message.style.color = "#e53935";
-                guessInput.focus();
                 return;
             }
 
             if (guess < 1 || guess > 100) {
                 message.textContent = "Please enter a number between 1-100!";
                 message.style.color = "#e53935";
-                guessInput.focus();
                 return;
             }
 
@@ -113,11 +94,9 @@
             attemptsDisplay.textContent = `Attempts: ${attempts}`;
 
             if (guess === secretNumber) {
-                message.textContent = `🎉 Correct! The number was ${secretNumber}.`;
+                message.textContent = `🎉 Correct! The number was ${secretNumber}. Starting new game...`;
                 message.style.color = "#43a047";
-                guessInput.disabled = true;
-                document.getElementById("submit-btn").disabled = true;
-                document.getElementById("play-again").style.display = "inline-block";
+                setTimeout(initGame, 2000); // Automatically restart after 2 seconds
             } else if (guess < secretNumber) {
                 message.textContent = "⬆️ Higher!";
                 message.style.color = "#1e88e5";
@@ -126,17 +105,11 @@
                 message.style.color = "#1e88e5";
             }
             
-            // Clear and focus the input for next guess
             guessInput.value = "";
             guessInput.focus();
         }
         
-        // Reset the game
-        function resetGame() {
-            initGame();
-        }
-        
-        // Initialize the game when page loads
+        // Initialize game on page load
         window.onload = initGame;
         
         // Allow pressing Enter to submit

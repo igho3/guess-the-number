@@ -84,6 +84,9 @@
         #twitter-btn {
             background: #1DA1F2;
         }
+        #whatsapp-btn {
+            background: #25D366;
+        }
         #play-again-btn {
             background: #FF9800;
         }
@@ -110,6 +113,7 @@
             <p>Share your victory:</p>
             <button id="screenshot-btn">Take Screenshot</button>
             <a href="#" id="twitter-btn" class="social-btn">Tweet</a>
+            <a href="#" id="whatsapp-btn" class="social-btn">WhatsApp</a>
             <button id="play-again-btn">Play Again</button>
         </div>
         
@@ -150,8 +154,9 @@
             submitBtn.disabled = true;
             
             // Set up sharing links
-            const shareText = `I guessed the number ${secretNumber} in ${attempts} attempts! Try to beat me!`;
-            document.getElementById('twitter-btn').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(window.location.href)}`;
+            const shareText = `I guessed the number ${secretNumber} in ${attempts} attempts! Try to beat me! ${window.location.href}`;
+            document.getElementById('twitter-btn').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+            document.getElementById('whatsapp-btn').href = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
             
             // Set up screenshot button
             document.getElementById('screenshot-btn').addEventListener('click', function() {

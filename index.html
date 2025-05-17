@@ -26,6 +26,7 @@
             border: 2px solid #1e88e5;
             border-radius: 5px;
             width: 80px;
+            margin-right: 10px;
         }
         button {
             padding: 10px 20px;
@@ -40,34 +41,71 @@
         button:hover {
             background: #1565c0; /* Darker blue on hover */
         }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
         #message {
             font-weight: bold;
             min-height: 24px;
             margin: 15px 0;
+        }
+        #play-again {
+            display: none;
+            margin-top: 15px;
+            background: #43a047; /* Green for play again */
+        }
+        #play-again:hover {
+            background: #2e7d32;
         }
     </style>
 </head>
 <body>
     <div id="game">
         <h1>Guess the Number (1-100)</h1>
-        <input type="number" id="guess" placeholder="Enter guess" min="1" max="100">
-        <button onclick="checkGuess()">Submit</button>
+        <div>
+            <input type="number" id="guess" placeholder="Enter guess" min="1" max="100">
+            <button id="submit-btn" onclick="checkGuess()">Submit</button>
+        </div>
         <p id="message"></p>
         <p id="attempts">Attempts: 0</p>
+        <button id="play-again" onclick="resetGame()">Play Again</button>
     </div>
 
     <script>
-        const secretNumber = Math.floor(Math.random() * 100) + 1;
-        let attempts = 0;
-
+        let secretNumber;
+        let attempts;
+        
+        // Initialize the game
+        function initGame() {
+            secretNumber = Math.floor(Math.random() * 100) + 1;
+            attempts = 0;
+            document.getElementById("attempts").textContent = "Attempts: 0";
+            document.getElementById("message").textContent = "";
+            document.getElementById("guess").value = "";
+            document.getElementById("guess").disabled = false;
+            document.getElementById("submit-btn").disabled = false;
+            document.getElementById("play-again").style.display = "none";
+        }
+        
+        // Check the player's guess
         function checkGuess() {
-            const guess = parseInt(document.getElementById("guess").value);
+            const guessInput = document.getElementById("guess");
+            const guess = parseInt(guessInput.value);
             const message = document.getElementById("message");
             const attemptsDisplay = document.getElementById("attempts");
 
-            if (isNaN(guess) || guess < 1 || guess > 100) {
+            if (isNaN(guess) {
+                message.textContent = "Please enter a number!";
+                message.style.color = "#e53935";
+                guessInput.focus();
+                return;
+            }
+
+            if (guess < 1 || guess > 100) {
                 message.textContent = "Please enter a number between 1-100!";
-                message.style.color = "#e53935"; // Red for errors
+                message.style.color = "#e53935";
+                guessInput.focus();
                 return;
             }
 
@@ -76,16 +114,37 @@
 
             if (guess === secretNumber) {
                 message.textContent = `🎉 Correct! The number was ${secretNumber}.`;
-                message.style.color = "#43a047"; // Green for success
-                document.getElementById("guess").disabled = true;
+                message.style.color = "#43a047";
+                guessInput.disabled = true;
+                document.getElementById("submit-btn").disabled = true;
+                document.getElementById("play-again").style.display = "inline-block";
             } else if (guess < secretNumber) {
                 message.textContent = "⬆️ Higher!";
-                message.style.color = "#1e88e5"; // Blue for hints
+                message.style.color = "#1e88e5";
             } else {
                 message.textContent = "⬇️ Lower!";
                 message.style.color = "#1e88e5";
             }
+            
+            // Clear and focus the input for next guess
+            guessInput.value = "";
+            guessInput.focus();
         }
+        
+        // Reset the game
+        function resetGame() {
+            initGame();
+        }
+        
+        // Initialize the game when page loads
+        window.onload = initGame;
+        
+        // Allow pressing Enter to submit
+        document.getElementById("guess").addEventListener("keyup", function(event) {
+            if (event.key === "Enter") {
+                checkGuess();
+            }
+        });
     </script>
 </body>
 </html>

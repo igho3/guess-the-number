@@ -71,18 +71,18 @@
 <body>
     <div id="game">
         <h1>Guess the Number (1-100)</h1>
-        <p>You have <span id="remaining">10</span> attempts remaining</p>
+        <p>You have <span id="remaining">5</span> attempts remaining</p>
         <div>
             <input type="number" id="guess" placeholder="Enter guess" min="1" max="100" autofocus>
             <button id="submit-btn">Submit</button>
         </div>
         <p id="message"></p>
-        <p id="attempts">Attempts used: 0/10</p>
+        <p id="attempts">Attempts used: 0/5</p>
     </div>
 
     <script>
         // Game settings
-        const MAX_ATTEMPTS = 10;
+        const MAX_ATTEMPTS = 5;
         let secretNumber = Math.floor(Math.random() * 100) + 1;
         let attempts = 0;
         
@@ -100,9 +100,9 @@
             attemptsEl.textContent = `Attempts used: ${attempts}/${MAX_ATTEMPTS}`;
             
             // Visual feedback based on remaining attempts
-            if (remaining <= 3) {
+            if (remaining <= 1) {
                 remainingEl.className = 'attempts-critical';
-            } else if (remaining <= 5) {
+            } else if (remaining <= 2) {
                 remainingEl.className = 'attempts-warning';
             } else {
                 remainingEl.className = '';
@@ -125,7 +125,7 @@
             
             if (guess === secretNumber) {
                 // Win condition
-                messageEl.textContent = `🎉 Correct! You guessed it in ${attempts} attempts!`;
+                messageEl.textContent = `🎉 Correct! You guessed it in ${attempts} attempt${attempts === 1 ? '' : 's'}!`;
                 messageEl.style.color = '#43a047';
                 endGame();
             } else if (attempts >= MAX_ATTEMPTS) {
@@ -135,7 +135,7 @@
                 endGame();
             } else {
                 // Continue playing
-                messageEl.textContent = guess < secretNumber ? '⬆️ Higher!' : '⬇️ Lower!';
+                messageEl.textContent = guess < secretNumber ? 'Too low!' : 'Too high!';
                 messageEl.style.color = '#1e88e5';
                 guessInput.value = '';
             }
@@ -168,6 +168,9 @@
         
         // Initialize display
         updateAttemptsDisplay();
+        
+        // For debugging (remove in production)
+        console.log('Secret number:', secretNumber);
     </script>
 </body>
 </html>
